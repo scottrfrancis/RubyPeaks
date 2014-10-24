@@ -2,7 +2,8 @@
 
 tp= TrainingPeaks.new
 
-isGood= tp.authenticateAccount('user','pass')
+# set username and password before calling script
+isGood= tp.authenticateAccount(username,password)
 puts( "account is good " + isGood.to_s )
 
 workouts= tp.getWorkouts('2014-10-17','2014-10-24')
