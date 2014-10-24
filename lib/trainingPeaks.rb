@@ -1,7 +1,11 @@
-require "savon"
+require 'open-uri'
+require 'savon'
 
 class TrainingPeaks
-  TPWSDL= 'http://www.trainingpeaks.com/tpwebservices/service.asmx?WSDL'
+  TPBASE= 'http://www.trainingpeaks.com/tpwebservices/service.asmx'
+  TPWSDL= TPBASE + '?WSDL'
+  
+  @@client = nil
   
   attr_accessor :user, :password, :client, :guid, :athletes, :personID
   
@@ -13,40 +17,44 @@ class TrainingPeaks
     @user= aUser
     @password= aPassword
     
-    @client= openClient
-    
     @guid=nil          # returned from authenticate
     @athletes=nil
     @personID=nil      # needed for lots of calls
   end
   
+  def getClient
+    @@client = openClient if @@client.nil?
+    
+    @@client
+  end
+  
   def openClient
-    if ( @client.nil? ) #&& !@user.nil? && !@password.nil? )
-      @client = Savon.client( wsdl: TPWSDL )
+    if ( @@client.nil? ) #&& !@user.nil? && !@password.nil? )
+      @@client = Savon.client( wsdl: TPWSDL )
     end
     
-    if ( @client.nil? )
+    if ( @@client.nil? )
       puts( "TrainingPeaks.authenticateAccount:\tCan't open Client" )
     end
     
-    @client
+    @@client
   end
   
   #
   # callTP depends on the client being open.  Be sure to check that outside of this function
   #
   def callTP( method, params=nil )
+    cl= getClient
+    
     msg = { username: @user, password: @password }
     msg = msg.each_with_object( params ) { |(k,v), h| h[k] = v } if !params.nil?
-    resp = @client.call( method.to_sym, message: msg )
+    resp = cl.call( method.to_sym, message: msg )
   end
   
   def authenticateAccount( aUser=nil, aPassword=nil )
     @user = aUser if !aUser.nil?; @password = aPassword if !aPassword.nil?
     
-    if @client.nil?
-      puts( "TrainingPeaks.authenticateAccount:\tClient class not available" )
-    elsif ( @user.nil? || @password.nil? )
+    if ( @user.nil? || @password.nil? )
       puts( "TrainingPeaks.authenticateAccount:\tCan't authenticate without user and password non-nil" )
     else
       resp = callTP( :authenticate_account )
@@ -67,10 +75,8 @@ class TrainingPeaks
      ] )
     athletes=nil
     
-    if !@client.nil?
-      resp = callTP( :get_accessible_athletes, { types: athTypes } )
-      athletes = resp.body[:get_accessible_athletes_response][:get_accessible_athletes_result]
-    end
+    resp = callTP( :get_accessible_athletes, { types: athTypes } )
+    athletes = resp.body[:get_accessible_athletes_response][:get_accessible_athletes_result]
     
     @athletes = athletes
   end
@@ -130,5 +136,19 @@ class TrainingPeaks
         { personId: @personID, workoutIds: workoutID } )
           
     resp.body[:get_extended_workouts_for_accessible_athlete_response][:get_extended_workouts_for_accessible_athlete_result][:pwx]
+  end
+  
+  def saveWorkoutDataToFile( workoutID, filename )
+    params = { username: @user,
+              password: @password,
+              personId: @personID,
+              workoutIds: workoutID }
+    
+    url = TPBASE + "/GetExtendedWorkoutsForAccessibleAthlete" + '?' + params.map{|e| e.join('=')}.join('&')
+    puts( url )
+    
+    open( filename, 'wb' ) do |f|
+      f << open( url ).read
+    end
   end
 end
