@@ -119,4 +119,16 @@ class TrainingPeaks
           
     workouts = resp.body[:get_workouts_for_accessible_athlete_response][:get_workouts_for_accessible_athlete_result][:workout]      
   end
+  
+  #
+  # gets workout data (PWX file) for a single workoutID or array of workoutID(s)
+  #
+  def getWorkoutData( workoutID )
+    usePersonIDfromUsername() if @personID.nil?
+    
+    resp = callTP( :get_extended_workouts_for_accessible_athlete,
+        { personId: @personID, workoutIds: workoutID } )
+          
+    resp.body[:get_extended_workouts_for_accessible_athlete_response][:get_extended_workouts_for_accessible_athlete_result][:pwx]
+  end
 end
