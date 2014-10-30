@@ -122,8 +122,12 @@ class TrainingPeaks
     resp = callTP( :get_workouts_for_accessible_athlete,
         { personId: @personID, startDate: start, endDate: stop } )
   
-          
-    workouts = resp.body[:get_workouts_for_accessible_athlete_response][:get_workouts_for_accessible_athlete_result][:workout]      
+    if (!resp.body.nil? && !resp.body[:get_workouts_for_accessible_athlete_response].nil? && 
+      !resp.body[:get_workouts_for_accessible_athlete_response][:get_workouts_for_accessible_athlete_result].nil? && 
+      !resp.body[:get_workouts_for_accessible_athlete_response][:get_workouts_for_accessible_athlete_result][:workout].nil? ) 
+      
+        workouts = resp.body[:get_workouts_for_accessible_athlete_response][:get_workouts_for_accessible_athlete_result][:workout]  
+    end    
   end
   
   #
