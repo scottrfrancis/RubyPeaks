@@ -143,6 +143,8 @@ class TrainingPeaks
   end
   
   def saveWorkoutDataToFile( workoutID, filename )
+    usePersonIDfromUsername() if @personID.nil?
+
     params = { username: @user,
               password: @password,
               personId: @personID,
