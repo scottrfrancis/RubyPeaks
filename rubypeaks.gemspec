@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
 	s.description			= "Ruby bindings for TrainingPeaks API"
 	s.authors			= ["Scott Francis"]
 	s.email				= 'scott.russell.francis@gmail.com'
-	s.files				= ["lib/trainingPeaks.rb"]
+	s.files				= ["lib/trainingpeaks.rb"]
 	s.homepage			= 'http://rubygems.org/gems/trainingpeaks'
 	s.license			= 'Apache2.0'
 end
