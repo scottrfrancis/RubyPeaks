@@ -8,7 +8,7 @@ class PWXFile
   def initialize( aFileName = nil )
     @doc = nil
     
-    @doc = loadFile( aFileName )
+    @doc = loadFile( aFileName );
   end
   
   def loadFile( aFileName )
@@ -21,6 +21,21 @@ class PWXFile
     @doc
   end
   
+  def getNodeFloatAndAttrHash( node )
+    result = nil
+    
+    if node.attributes.length <= 0
+     result = node.text.to_f
+    else
+     result = {}
+     node.attributes.each do |k,v|
+       result[k] = v.value.to_f
+     end
+    end
+           
+    result
+  end
+  
   def getSummary()
     summary = {}
     
@@ -30,18 +45,30 @@ class PWXFile
       workoutSummary.children.each do |n|
         next if n.class != Nokogiri::XML::Element
         
-        if n.attributes.length <= 0
-          summary[n.name] = n.text.to_f
-        else
-          summary[n.name] = {}
-          n.attributes.each do |k,v|
-            summary[n.name][k] = v.value.to_f
-          end
-        end
+        summary[n.name] = getNodeFloatAndAttrHash( n )
       end
     end
       
     summary
+  end
+  
+  def getSegments()
+    segments = []
+    
+    if !@doc.nil?
+      @doc.xpath( "//xmlns:workout/xmlns:segment" ).each do |s|
+        sh = {}
+        s.xpath( "xmlns:summarydata" ).children.each do |c|
+          next if c.class != Nokogiri::XML::Element
+          
+          sh[c.name] = getNodeFloatAndAttrHash( c )
+        end 
+        
+        segments << { s.xpath( "xmlns:name" ).text=> sh }
+      end
+    end
+      
+    segments
   end
   
 end
