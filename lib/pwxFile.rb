@@ -11,6 +11,10 @@ class PWXFile
     @doc = loadFile( aFileName );
   end
   
+  def getDoc
+    @doc
+  end
+  
   def loadFile( aFileName )
     if !aFileName.nil? && aFileName != ""
       File.open( aFileName ) do |f|
@@ -69,6 +73,24 @@ class PWXFile
     end
       
     segments
+  end
+  
+  def getSamples
+  	samples = []
+  
+  	if !@doc.nil?
+  		@doc.xpath( "//xmlns:workout/xmlns:sample" ).each do |s|
+  			sa = {}
+  			s.children.each do |c|
+  			  next if c.class != Nokogiri::XML::Element
+  				sa[c.name] = c.text.to_f
+  			end
+  			
+  			samples << sa
+  		end
+  	end
+  	
+  	samples
   end
   
 end
